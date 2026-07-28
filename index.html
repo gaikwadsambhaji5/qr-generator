@@ -1,10 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>QR Generator</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Code Generator</title>
+
+<link rel="stylesheet" href="style.css">
+
+<script src="qrcode.min.js"></script>
 </head>
+
 <body>
-<h1>QR Generator Works!</h1>
-<p>Hello Sambhaji 👋</p>
+
+<div class="container">
+
+<h1>QR Code Generator</h1>
+
+<input
+id="text"
+type="text"
+placeholder="Enter text or URL">
+
+<button onclick="generateQR()">
+Generate QR Code
+</button>
+
+<div id="qrcode"></div>
+
+</div>
+
+<script src="script.js"></script>
+
 </body>
 </html>
