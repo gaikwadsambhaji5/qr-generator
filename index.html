@@ -6,24 +6,22 @@
 <title>QR Code Generator</title>
 
 <link rel="stylesheet" href="style.css">
-
 <script src="qrcode.min.js"></script>
-</head>
 
+</head>
 <body>
 
 <div class="container">
 
-<h1>QR Code Generator</h1>
+<h2>QR Code Generator</h2>
 
-<input
-id="text"
-type="text"
-placeholder="Enter text or URL">
+<input type="text" id="serial" placeholder="Serial Number">
 
-<button onclick="generateQR()">
-Generate QR Code
-</button>
+<input type="text" id="model" placeholder="Model Name">
+
+<input type="text" id="date" placeholder="MM/YYYY" maxlength="7">
+
+<button onclick="generateQR()">Generate QR Code</button>
 
 <div id="qrcode"></div>
 
