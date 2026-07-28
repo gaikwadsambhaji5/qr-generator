@@ -20,33 +20,7 @@
 
 <h1>FEBTECH QR Code Generator</h1>
 
-<!-- Serial Number -->
-
-<label>Serial Number</label>
-
-<input
-type="text"
-id="serial"
-placeholder="Enter Serial Number"
-autocomplete="off">
-
-<!-- Model Number -->
-
-<label>Model Number</label>
-
-<div class="model-box">
-
-<span class="prefix">FEBTECH-</span>
-
-<input
-type="text"
-id="model"
-placeholder="0480A CL"
-autocomplete="off">
-
-</div>
-
-<!-- Machine Name -->
+<!-- Machine -->
 
 <label>Machine Name</label>
 
@@ -90,6 +64,32 @@ autocomplete="off">
 
 </datalist>
 
+<!-- Model -->
+
+<label>Model Number</label>
+
+<div class="model-box">
+
+<span class="prefix">FEBTECH-</span>
+
+<input
+type="text"
+id="model"
+placeholder="0480A CL"
+autocomplete="off">
+
+</div>
+
+<!-- Serial -->
+
+<label>Serial Number</label>
+
+<input
+type="text"
+id="serial"
+placeholder="Enter Serial Number"
+autocomplete="off">
+
 <!-- Date -->
 
 <label>Date (MM/YYYY)</label>
@@ -101,10 +101,30 @@ placeholder="MM/YYYY"
 maxlength="7"
 autocomplete="off">
 
+<!-- Responsible Person -->
+
+<label>Responsible Person</label>
+
+<input
+list="persons"
+id="person"
+placeholder="Select or type a name..."
+autocomplete="off">
+
+<datalist id="persons">
+
+<option value="Mr. Amrut Deshmukh">
+<option value="Mr. Rajaram Mithe">
+<option value="Mr. Umesh Kale">
+
+</datalist>
+
 <!-- Button -->
 
 <button onclick="generateQR()">
+
 Generate QR Code
+
 </button>
 
 <!-- QR -->
