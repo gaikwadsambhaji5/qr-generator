@@ -300,7 +300,8 @@
 
             const model = "FEBTECH-" + modelInput;
 
-            const qrText = `${machine}\n${model}\n${serial}\n${date}\n${person}`;
+            // Added the required line at the very beginning
+            const qrText = `##########-THIS_NEW_START-##########\n${machine}\n${model}\n${serial}\n${date}\n${person}`;
 
             const qr = document.getElementById("qrcode");
             qr.innerHTML = "";
