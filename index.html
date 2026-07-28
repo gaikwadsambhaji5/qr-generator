@@ -1,27 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QR Code Generator</title>
+
+<title>FEBTECH QR Code Generator</title>
 
 <link rel="stylesheet" href="style.css">
+
 <script src="qrcode.min.js"></script>
 
 </head>
+
 <body>
 
 <div class="container">
 
-<h2>QR Code Generator</h2>
+<h1>FEBTECH QR Code Generator</h1>
 
-<input type="text" id="serial" placeholder="Serial Number">
+<!-- Serial Number -->
 
-<input type="text" id="model" placeholder="Model Name">
+<label>Serial Number</label>
 
-<input type="text" id="date" placeholder="MM/YYYY" maxlength="7">
+<input
+type="text"
+id="serial"
+placeholder="Enter Serial Number"
+autocomplete="off">
 
-<button onclick="generateQR()">Generate QR Code</button>
+<!-- Model Number -->
+
+<label>Model Number</label>
+
+<div class="model-box">
+
+<span class="prefix">FEBTECH-</span>
+
+<input
+type="text"
+id="model"
+placeholder="0480A CL"
+autocomplete="off">
+
+</div>
+
+<!-- Machine Name -->
+
+<label>Machine Name</label>
+
+<input
+list="machines"
+id="machine"
+placeholder="Start typing machine name..."
+autocomplete="off">
+
+<datalist id="machines">
+
+<option value="Febtech's DCM-180">
+<option value="Febtech's DCM-300">
+<option value="Automatic Ladling Machine">
+<option value="Servo Sprayer Two Axis">
+<option value="Linear Servo Sprayer Two Axis">
+<option value="Auto Spray">
+<option value="Servo Sprayer With Extractor Four Axis">
+<option value="Centralized Die-cote Mixing Unit">
+<option value="Vertical Auto Sprayer">
+<option value="Die Coat Container with Mixing Unit">
+<option value="Mould Channel Descaling Unit">
+<option value="Portable Die Coat Mixing Unit">
+<option value="Quenching Tank">
+<option value="Automatic Extractor">
+<option value="Jet Cooling Unit (Open Loop)">
+<option value="Cooling Conveyor">
+<option value="Auto Die Clamping Unit">
+<option value="Jet Cooling Unit (Closed Loop)">
+<option value="Mould Temperature Controller">
+<option value="Mould Vacuum Unit">
+<option value="N2 Degassing Machine">
+<option value="Hoistable Degassing Unit">
+<option value="Vacuum Testing Unit">
+<option value="Density Index Analyzer">
+<option value="Dispenser Unit">
+<option value="Plunger Lubrication Unit">
+<option value="Ejector Pin Cutting Machine">
+<option value="Metal Transfer Ladle">
+<option value="Universal Precision Grinder">
+
+</datalist>
+
+<!-- Date -->
+
+<label>Date (MM/YYYY)</label>
+
+<input
+type="text"
+id="date"
+placeholder="MM/YYYY"
+maxlength="7"
+autocomplete="off">
+
+<!-- Button -->
+
+<button onclick="generateQR()">
+Generate QR Code
+</button>
+
+<!-- QR -->
 
 <div id="qrcode"></div>
 
@@ -30,4 +116,5 @@
 <script src="script.js"></script>
 
 </body>
+
 </html>
