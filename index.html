@@ -1,140 +1,328 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FEBTECH QR Code Generator</title>
+    
+    <!-- QR Code Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-<title>FEBTECH QR Code Generator</title>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background: #f2f2f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
 
-<link rel="stylesheet" href="style.css">
+        .container {
+            width: 100%;
+            max-width: 420px;
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,.12);
+        }
 
-<script src="qrcode.min.js"></script>
+        h1 {
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 28px;
+            color: #111;
+        }
 
+        label {
+            display: block;
+            margin-top: 18px;
+            margin-bottom: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input {
+            width: 100%;
+            height: 50px;
+            border: 1px solid #d1d1d6;
+            border-radius: 12px;
+            padding: 0 15px;
+            font-size: 16px;
+            outline: none;
+            background: white;
+            transition: .2s;
+        }
+
+        input:focus {
+            border-color: #007AFF;
+            box-shadow: 0 0 0 4px rgba(0,122,255,.15);
+        }
+
+        input[list] {
+            cursor: text;
+        }
+
+        .model-box {
+            display: flex;
+            align-items: center;
+            border: 1px solid #d1d1d6;
+            border-radius: 12px;
+            overflow: hidden;
+            background: white;
+        }
+
+        .prefix {
+            background: #f5f5f7;
+            color: #555;
+            padding: 0 15px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+            border-right: 1px solid #d1d1d6;
+            white-space: nowrap;
+        }
+
+        .model-box input {
+            border: none;
+            border-radius: 0;
+            flex: 1;
+            height: 50px;
+            padding-left: 15px;
+            box-shadow: none;
+        }
+
+        .model-box input:focus {
+            box-shadow: none;
+        }
+
+        button {
+            width: 100%;
+            height: 52px;
+            margin-top: 28px;
+            border: none;
+            border-radius: 12px;
+            background: #007AFF;
+            color: white;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        button:hover {
+            background: #0063d1;
+        }
+
+        button:active {
+            transform: scale(.98);
+        }
+
+        #qrcode {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #qrcode img,
+        #qrcode canvas {
+            border: 10px solid white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,.12);
+        }
+
+        @media(max-width: 500px) {
+            .container {
+                padding: 20px;
+                border-radius: 16px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
 </head>
-
 <body>
 
-<div class="container">
+    <div class="container">
+        <h1>FEBTECH QR Code Generator</h1>
 
-<h1>FEBTECH QR Code Generator</h1>
+        <!-- Machine -->
+        <label>Machine Name</label>
+        <input list="machines" id="machine" placeholder="Start typing machine name..." autocomplete="off">
+        <datalist id="machines">
+            <option value="Febtech's DCM-180">
+            <option value="Febtech's DCM-300">
+            <option value="Automatic Ladling Machine">
+            <option value="Servo Sprayer Two Axis">
+            <option value="Linear Servo Sprayer Two Axis">
+            <option value="Auto Spray">
+            <option value="Servo Sprayer With Extractor Four Axis">
+            <option value="Centralized Die-cote Mixing Unit">
+            <option value="Vertical Auto Sprayer">
+            <option value="Die Coat Container with Mixing Unit">
+            <option value="Mould Channel Descaling Unit">
+            <option value="Portable Die Coat Mixing Unit">
+            <option value="Quenching Tank">
+            <option value="Automatic Extractor">
+            <option value="Jet Cooling Unit (Open Loop)">
+            <option value="Cooling Conveyor">
+            <option value="Auto Die Clamping Unit">
+            <option value="Jet Cooling Unit (Closed Loop)">
+            <option value="Mould Temperature Controller">
+            <option value="Mould Vacuum Unit">
+            <option value="N2 Degassing Machine">
+            <option value="Hoistable Degassing Unit">
+            <option value="Vacuum Testing Unit">
+            <option value="Density Index Analyzer">
+            <option value="Dispenser Unit">
+            <option value="Plunger Lubrication Unit">
+            <option value="Ejector Pin Cutting Machine">
+            <option value="Metal Transfer Ladle">
+            <option value="Universal Precision Grinder">
+        </datalist>
 
-<!-- Machine -->
+        <!-- Model -->
+        <label>Model Number</label>
+        <div class="model-box">
+            <span class="prefix">FEBTECH-</span>
+            <input type="text" id="model" placeholder="0480A CL" autocomplete="off">
+        </div>
 
-<label>Machine Name</label>
+        <!-- Serial -->
+        <label>Serial Number</label>
+        <input type="text" id="serial" placeholder="Enter Serial Number" autocomplete="off">
 
-<input
-list="machines"
-id="machine"
-placeholder="Start typing machine name..."
-autocomplete="off">
+        <!-- Date -->
+        <label>Date (MM/YYYY)</label>
+        <input type="text" id="date" placeholder="MM/YYYY" maxlength="7" autocomplete="off">
 
-<datalist id="machines">
+        <!-- Responsible Person -->
+        <label>Responsible Person</label>
+        <input list="persons" id="person" placeholder="Select or type a name..." autocomplete="off">
+        <datalist id="persons">
+            <option value="Mr. Amrut Deshmukh">
+            <option value="Mr. Rajaram Mithe">
+            <option value="Mr. Umesh Kale">
+        </datalist>
 
-<option value="Febtech's DCM-180">
-<option value="Febtech's DCM-300">
-<option value="Automatic Ladling Machine">
-<option value="Servo Sprayer Two Axis">
-<option value="Linear Servo Sprayer Two Axis">
-<option value="Auto Spray">
-<option value="Servo Sprayer With Extractor Four Axis">
-<option value="Centralized Die-cote Mixing Unit">
-<option value="Vertical Auto Sprayer">
-<option value="Die Coat Container with Mixing Unit">
-<option value="Mould Channel Descaling Unit">
-<option value="Portable Die Coat Mixing Unit">
-<option value="Quenching Tank">
-<option value="Automatic Extractor">
-<option value="Jet Cooling Unit (Open Loop)">
-<option value="Cooling Conveyor">
-<option value="Auto Die Clamping Unit">
-<option value="Jet Cooling Unit (Closed Loop)">
-<option value="Mould Temperature Controller">
-<option value="Mould Vacuum Unit">
-<option value="N2 Degassing Machine">
-<option value="Hoistable Degassing Unit">
-<option value="Vacuum Testing Unit">
-<option value="Density Index Analyzer">
-<option value="Dispenser Unit">
-<option value="Plunger Lubrication Unit">
-<option value="Ejector Pin Cutting Machine">
-<option value="Metal Transfer Ladle">
-<option value="Universal Precision Grinder">
+        <!-- Button -->
+        <button onclick="generateQR()">Generate QR Code</button>
 
-</datalist>
+        <!-- QR Output -->
+        <div id="qrcode"></div>
+    </div>
 
-<!-- Model -->
+    <script>
+        // =========================
+        // Load Saved Persons
+        // =========================
+        const personList = document.getElementById("persons");
+        let savedPersons = JSON.parse(localStorage.getItem("persons")) || [];
 
-<label>Model Number</label>
+        savedPersons.forEach(name => {
+            const option = document.createElement("option");
+            option.value = name;
+            personList.appendChild(option);
+        });
 
-<div class="model-box">
+        // =========================
+        // Auto Date Format MM/YYYY
+        // =========================
+        const dateInput = document.getElementById("date");
 
-<span class="prefix">FEBTECH-</span>
+        dateInput.addEventListener("input", function () {
+            let value = this.value.replace(/\D/g, "");
+            
+            if (value.length > 6)
+                value = value.substring(0, 6);
+                
+            if (value.length >= 3) {
+                value = value.substring(0, 2) + "/" + value.substring(2);
+            }
+            this.value = value;
+        });
 
-<input
-type="text"
-id="model"
-placeholder="0480A CL"
-autocomplete="off">
+        // =========================
+        // Generate QR
+        // =========================
+        function generateQR() {
+            const machine = document.getElementById("machine").value.trim();
+            const modelInput = document.getElementById("model").value.trim();
+            const serial = document.getElementById("serial").value.trim();
+            const date = document.getElementById("date").value.trim();
+            const person = document.getElementById("person").value.trim();
 
-</div>
+            if (machine == "") {
+                alert("Select Machine Name");
+                return;
+            }
+            if (modelInput == "") {
+                alert("Enter Model Number");
+                return;
+            }
+            if (serial == "") {
+                alert("Enter Serial Number");
+                return;
+            }
+            if (!/^\d{2}\/\d{4}$/.test(date)) {
+                alert("Date must be MM/YYYY");
+                return;
+            }
+            if (person == "") {
+                alert("Enter Responsible Person");
+                return;
+            }
 
-<!-- Serial -->
+            // Save New Person
+            if (!savedPersons.includes(person) &&
+                person != "Mr. Amrut Deshmukh" &&
+                person != "Mr. Rajaram Mithe" &&
+                person != "Mr. Umesh Kale") {
+                
+                savedPersons.push(person);
+                localStorage.setItem("persons", JSON.stringify(savedPersons));
+                
+                const option = document.createElement("option");
+                option.value = person;
+                personList.appendChild(option);
+            }
 
-<label>Serial Number</label>
+            const model = "FEBTECH-" + modelInput;
 
-<input
-type="text"
-id="serial"
-placeholder="Enter Serial Number"
-autocomplete="off">
+            const qrText = `${machine}\n${model}\n${serial}\n${date}\n${person}`;
 
-<!-- Date -->
+            const qr = document.getElementById("qrcode");
+            qr.innerHTML = "";
 
-<label>Date (MM/YYYY)</label>
+            new QRCode(qr, {
+                text: qrText,
+                width: 250,
+                height: 250,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
 
-<input
-type="text"
-id="date"
-placeholder="MM/YYYY"
-maxlength="7"
-autocomplete="off">
-
-<!-- Responsible Person -->
-
-<label>Responsible Person</label>
-
-<input
-list="persons"
-id="person"
-placeholder="Select or type a name..."
-autocomplete="off">
-
-<datalist id="persons">
-
-<option value="Mr. Amrut Deshmukh">
-<option value="Mr. Rajaram Mithe">
-<option value="Mr. Umesh Kale">
-
-</datalist>
-
-<!-- Button -->
-
-<button onclick="generateQR()">
-
-Generate QR Code
-
-</button>
-
-<!-- QR -->
-
-<div id="qrcode"></div>
-
-</div>
-
-<script src="script.js"></script>
-
+        // =========================
+        // ENTER KEY
+        // =========================
+        document.addEventListener("keydown", function(e) {
+            if (e.key === "Enter") {
+                generateQR();
+            }
+        });
+    </script>
 </body>
-
 </html>
