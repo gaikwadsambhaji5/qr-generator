@@ -1,4 +1,24 @@
-// Auto format date (MM/YYYY)
+// =========================
+// Load Saved Persons
+// =========================
+
+const personList = document.getElementById("persons");
+
+let savedPersons = JSON.parse(localStorage.getItem("persons")) || [];
+
+savedPersons.forEach(name => {
+
+    const option = document.createElement("option");
+    option.value = name;
+    personList.appendChild(option);
+
+});
+
+
+
+// =========================
+// Auto Date Format MM/YYYY
+// =========================
 
 const dateInput = document.getElementById("date");
 
@@ -7,10 +27,15 @@ dateInput.addEventListener("input", function () {
     let value = this.value.replace(/\D/g, "");
 
     if (value.length > 6)
-        value = value.substring(0, 6);
+        value = value.substring(0,6);
 
-    if (value.length >= 3) {
-        value = value.substring(0, 2) + "/" + value.substring(2);
+    if (value.length >=3){
+
+        value =
+        value.substring(0,2)
+        + "/"
+        + value.substring(2);
+
     }
 
     this.value = value;
@@ -19,73 +44,122 @@ dateInput.addEventListener("input", function () {
 
 
 
+// =========================
 // Generate QR
+// =========================
 
-function generateQR() {
+function generateQR(){
 
-    const serial = document.getElementById("serial").value.trim();
+    const machine =
+    document.getElementById("machine").value.trim();
 
-    const modelInput = document.getElementById("model").value.trim();
+    const modelInput =
+    document.getElementById("model").value.trim();
 
-    const machine = document.getElementById("machine").value.trim();
+    const serial =
+    document.getElementById("serial").value.trim();
 
-    const date = document.getElementById("date").value.trim();
+    const date =
+    document.getElementById("date").value.trim();
+
+    const person =
+    document.getElementById("person").value.trim();
 
 
 
-    if (serial === "") {
-        alert("Please enter Serial Number.");
+    if(machine==""){
+
+        alert("Select Machine Name");
         return;
+
     }
 
-    if (modelInput === "") {
-        alert("Please enter Model Number.");
+    if(modelInput==""){
+
+        alert("Enter Model Number");
         return;
+
     }
 
-    if (machine === "") {
-        alert("Please select Machine Name.");
+    if(serial==""){
+
+        alert("Enter Serial Number");
         return;
+
     }
 
-    if (!/^\d{2}\/\d{4}$/.test(date)) {
-        alert("Date must be in MM/YYYY format.");
+    if(!/^\d{2}\/\d{4}$/.test(date)){
+
+        alert("Date must be MM/YYYY");
         return;
+
+    }
+
+    if(person==""){
+
+        alert("Enter Responsible Person");
+        return;
+
     }
 
 
 
-    const model = "FEBTECH-" + modelInput;
+    // Save New Person
+
+    if(!savedPersons.includes(person) &&
+        person!="Mr. Amrut Deshmukh" &&
+        person!="Mr. Rajaram Mithe" &&
+        person!="Mr. Umesh Kale"){
+
+        savedPersons.push(person);
+
+        localStorage.setItem(
+            "persons",
+            JSON.stringify(savedPersons)
+        );
+
+        const option=document.createElement("option");
+
+        option.value=person;
+
+        personList.appendChild(option);
+
+    }
 
 
 
-    const qrText =
-`${serial}
+    const model="FEBTECH-"+modelInput;
+
+
+
+    const qrText=
+`${machine}
 ${model}
-${machine}
-${date}`;
+${serial}
+${date}
+${person}`;
 
 
 
-    const qrDiv = document.getElementById("qrcode");
+    const qr=document.getElementById("qrcode");
 
-    qrDiv.innerHTML = "";
+    qr.innerHTML="";
 
 
 
-    new QRCode(qrDiv, {
+    new QRCode(qr,{
 
-        text: qrText,
+        text:qrText,
 
-        width: 250,
+        width:250,
 
-        height: 250,
+        height:250,
 
-        colorDark: "#000000",
+        colorDark:"#000000",
 
-        colorLight: "#ffffff",
+        colorLight:"#ffffff",
 
-        correctLevel: QRCode.CorrectLevel.H
+        correctLevel:QRCode.CorrectLevel.H
 
     });
 
@@ -93,11 +167,13 @@ ${date}`;
 
 
 
-// Press Enter to Generate
+// =========================
+// ENTER KEY
+// =========================
 
-document.addEventListener("keydown", function (event) {
+document.addEventListener("keydown",function(e){
 
-    if (event.key === "Enter") {
+    if(e.key==="Enter"){
 
         generateQR();
 
