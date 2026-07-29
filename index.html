@@ -35,7 +35,7 @@
             position: fixed;
             top: 20px;
             left: 20px;
-            background: #5856d6; /* Distinct purple color */
+            background: #5856d6;
             color: white;
             border: none;
             border-radius: 20px;
@@ -231,19 +231,39 @@
             color: white;
             font-size: 22px;
             font-weight: bold;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
             text-align: center;
         }
         .recent-modal-subtitle {
             color: #ccc;
             font-size: 13px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             text-align: center;
         }
+        .sync-toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            width: 100%;
+            max-width: 450px;
+            justify-content: center;
+        }
+        .sync-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 10px;
+            padding: 8px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .sync-btn:hover { background: rgba(255, 255, 255, 0.3); }
         .recent-list {
             width: 100%;
             max-width: 450px;
-            max-height: 70vh;
+            max-height: 60vh;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
@@ -305,7 +325,7 @@
             border-radius: 12px;
             object-fit: contain; 
             transition: opacity 0.3s ease;
-            touch-action: none; /* Disables pinch zoom */
+            touch-action: none;
         }
 
         .token-title {
@@ -375,37 +395,7 @@
         <!-- Machine -->
         <label>Machine Name</label>
         <input list="machines" id="machine" placeholder="Start typing machine name..." autocomplete="off">
-        <datalist id="machines">
-            <option value="Febtech's DCM-180">
-            <option value="Febtech's DCM-300">
-            <option value="Automatic Ladling Machine">
-            <option value="Servo Sprayer Two Axis">
-            <option value="Linear Servo Sprayer Two Axis">
-            <option value="Auto Spray">
-            <option value="Servo Sprayer With Extractor Four Axis">
-            <option value="Centralized Die-cote Mixing Unit">
-            <option value="Vertical Auto Sprayer">
-            <option value="Die Coat Container with Mixing Unit">
-            <option value="Mould Channel Descaling Unit">
-            <option value="Portable Die Coat Mixing Unit">
-            <option value="Quenching Tank">
-            <option value="Automatic Extractor">
-            <option value="Jet Cooling Unit (Open Loop)">
-            <option value="Cooling Conveyor">
-            <option value="Auto Die Clamping Unit">
-            <option value="Jet Cooling Unit (Closed Loop)">
-            <option value="Mould Temperature Controller">
-            <option value="Mould Vacuum Unit">
-            <option value="N2 Degassing Machine">
-            <option value="Hoistable Degassing Unit">
-            <option value="Vacuum Testing Unit">
-            <option value="Density Index Analyzer">
-            <option value="Dispenser Unit">
-            <option value="Plunger Lubrication Unit">
-            <option value="Ejector Pin Cutting Machine">
-            <option value="Metal Transfer Ladle">
-            <option value="Universal Precision Grinder">
-        </datalist>
+        <datalist id="machines"></datalist>
 
         <!-- Model -->
         <label>Model Number</label>
@@ -450,6 +440,13 @@
         <span class="close-btn" onclick="closeRecentModal()">&times;</span>
         <div class="recent-modal-header">Recent QR Codes</div>
         <div class="recent-modal-subtitle">Auto-deletes after 28 hours • Click to view</div>
+        
+        <!-- Sync Toolbar to share data between iPhone & PC -->
+        <div class="sync-toolbar">
+            <button class="sync-btn" onclick="exportSyncData()">Export Sync Code</button>
+            <button class="sync-btn" onclick="importSyncData()">Import Sync Code</button>
+        </div>
+
         <div id="recentList" class="recent-list"></div>
     </div>
 
@@ -472,14 +469,30 @@
 
     <script>
         // =========================
+        // Default Machine List
+        // =========================
+        const DEFAULT_MACHINES = [
+            "Febtech's DCM-180", "Febtech's DCM-300", "Automatic Ladling Machine",
+            "Servo Sprayer Two Axis", "Linear Servo Sprayer Two Axis", "Auto Spray",
+            "Servo Sprayer With Extractor Four Axis", "Centralized Die-cote Mixing Unit",
+            "Vertical Auto Sprayer", "Die Coat Container with Mixing Unit",
+            "Mould Channel Descaling Unit", "Portable Die Coat Mixing Unit",
+            "Quenching Tank", "Automatic Extractor", "Jet Cooling Unit (Open Loop)",
+            "Cooling Conveyor", "Auto Die Clamping Unit", "Jet Cooling Unit (Closed Loop)",
+            "Mould Temperature Controller", "Mould Vacuum Unit", "N2 Degassing Machine",
+            "Hoistable Degassing Unit", "Vacuum Testing Unit", "Density Index Analyzer",
+            "Dispenser Unit", "Plunger Lubrication Unit", "Ejector Pin Cutting Machine",
+            "Metal Transfer Ladle", "Universal Precision Grinder"
+        ];
+
+        // =========================
         // 28-Hour Expiry & Recent QR Logic
         // =========================
-        const EXPIRY_HOURS_MS = 28 * 60 * 60 * 1000; // 28 hours in milliseconds
+        const EXPIRY_HOURS_MS = 28 * 60 * 60 * 1000;
 
         function getCleanRecentQRs() {
             let recentQRs = JSON.parse(localStorage.getItem("recent_qr_codes") || "[]");
             const now = Date.now();
-            // Keep only QR codes created within the last 28 hours
             recentQRs = recentQRs.filter(item => (now - item.timestamp) < EXPIRY_HOURS_MS);
             localStorage.setItem("recent_qr_codes", JSON.stringify(recentQRs));
             return recentQRs;
@@ -487,8 +500,6 @@
 
         function saveRecentQR(machine, model, serial, date, person, qrText) {
             let recentQRs = getCleanRecentQRs();
-            
-            // Avoid duplicates by filtering out identical serials before adding latest to top
             recentQRs = recentQRs.filter(item => item.serial !== serial);
 
             recentQRs.unshift({
@@ -546,13 +557,66 @@
         }
 
         // =========================
-        // Handle Auto Suggestions 
+        // Sync / Backup Data Across Devices (PC <-> iPhone)
+        // =========================
+        function exportSyncData() {
+            const exportData = {
+                custom_machine_data: JSON.parse(localStorage.getItem("custom_machine_data") || "[]"),
+                recent_qr_codes: getCleanRecentQRs(),
+                persons: JSON.parse(localStorage.getItem("persons") || "[]")
+            };
+            const syncString = btoa(encodeURIComponent(JSON.stringify(exportData)));
+            
+            navigator.clipboard.writeText(syncString).then(() => {
+                alert("Sync Code COPIED to clipboard!\n\nEmail or send this text to your PC/iPhone and click 'Import Sync Code' to sync all your recent QRs and newly added machines!");
+            }).catch(() => {
+                prompt("Copy this Sync Code manually:", syncString);
+            });
+        }
+
+        function importSyncData() {
+            const input = prompt("Paste your Sync Code here to import your Recent QRs and Custom Machines:");
+            if (!input) return;
+
+            try {
+                const importData = JSON.parse(decodeURIComponent(atob(input.trim())));
+                
+                // Merge custom machine data
+                const existingMachines = JSON.parse(localStorage.getItem("custom_machine_data") || "[]");
+                const mergedMachines = [...existingMachines, ...(importData.custom_machine_data || [])];
+                const uniqueMachines = Array.from(new Set(mergedMachines.map(a => a.path)))
+                    .map(path => mergedMachines.find(a => a.path === path));
+                localStorage.setItem("custom_machine_data", JSON.stringify(uniqueMachines));
+
+                // Merge recent QRs
+                const existingQRs = getCleanRecentQRs();
+                const mergedQRs = [...existingQRs, ...(importData.recent_qr_codes || [])];
+                const uniqueQRs = Array.from(new Set(mergedQRs.map(a => a.serial)))
+                    .map(serial => mergedQRs.find(a => a.serial === serial));
+                localStorage.setItem("recent_qr_codes", JSON.stringify(uniqueQRs));
+
+                // Merge persons
+                const existingPersons = JSON.parse(localStorage.getItem("persons") || "[]");
+                const mergedPersons = Array.from(new Set([...existingPersons, ...(importData.persons || [])]));
+                localStorage.setItem("persons", JSON.stringify(mergedPersons));
+
+                alert("Success! Your Recent QR codes and custom machines have been imported and synced!");
+                updateSuggestions();
+                openRecentModal();
+            } catch (e) {
+                alert("Invalid Sync Code. Please make sure you copied the entire text correctly.");
+            }
+        }
+
+        // =========================
+        // Handle Auto Suggestions (NOW INCLUDES NEW MACHINES)
         // =========================
         function updateSuggestions() {
             const machineInput = document.getElementById("machine").value.trim();
             const modelInput = document.getElementById("model").value.trim();
             const currentFullModel = modelInput ? "FEBTECH-" + modelInput : "";
 
+            let availableMachines = new Set(DEFAULT_MACHINES);
             let availableModels = new Set();
             let availableSerials = new Set();
 
@@ -570,6 +634,9 @@
                     const dbModel = parts[3];
                     const dbSerial = parts[4];
 
+                    // Dynamically add any newly learned machine name to the machine list
+                    availableMachines.add(dbMachine);
+
                     if (dbMachine === machineInput) {
                         let cleanModel = dbModel.startsWith("FEBTECH-") ? dbModel.replace("FEBTECH-", "") : dbModel;
                         availableModels.add(cleanModel);
@@ -581,6 +648,16 @@
                 }
             });
 
+            // Populate Machines Datalist (Includes Default + Newly Learned Machines)
+            const machinesDatalist = document.getElementById("machines");
+            machinesDatalist.innerHTML = "";
+            availableMachines.forEach(m => {
+                let opt = document.createElement("option");
+                opt.value = m;
+                machinesDatalist.appendChild(opt);
+            });
+
+            // Populate Models Datalist
             const modelsDatalist = document.getElementById("models");
             modelsDatalist.innerHTML = "";
             availableModels.forEach(m => {
@@ -589,6 +666,7 @@
                 modelsDatalist.appendChild(opt);
             });
 
+            // Populate Serials Datalist
             const serialsDatalist = document.getElementById("serials");
             serialsDatalist.innerHTML = "";
             availableSerials.forEach(s => {
@@ -682,13 +760,16 @@
 
             const model = "FEBTECH-" + modelInput;
             
-            // 2. Save Custom Data logic to local storage
+            // 2. Save Custom Machine Name/Model/Serial to localStorage
             const newPath = `./data/${machine}/${model}/${serial}/custom_entry/img.jpg`;
             const savedCustomData = JSON.parse(localStorage.getItem("custom_machine_data") || "[]");
             if (!savedCustomData.some(item => item.path === newPath)) {
                 savedCustomData.push({ path: newPath, date: new Date().toISOString() });
                 localStorage.setItem("custom_machine_data", JSON.stringify(savedCustomData));
             }
+
+            // Refresh suggestions so the new machine name immediately shows up in dropdowns!
+            updateSuggestions();
 
             // 3. Setup QR text format
             const qrText = `##########-THIS_NEW_START-##########\n${machine}\n${model}\n${serial}\n${date}\n${person}`;
@@ -711,7 +792,7 @@
         }
 
         // =========================
-        // Tokens Slider Logic (Updated Order)
+        // Tokens Slider Logic
         // =========================
         const tokens = [
             { src: "tokens_qr_codes_MACHINE ID RECORD.webp", title: "MACHINE ID RECORD" },
