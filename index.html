@@ -6,9 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FEBTECH QR Code Generator</title>
     
-    <!-- External Database File -->
-    <!-- Make sure database_index.js is in the same folder as this file -->
+    <!-- External Database Files -->
+    <!-- Make sure these files are in the same folder as this HTML file -->
     <script src="database_index.js"></script>
+    <script src="qr_database.js"></script>
 
     <!-- QR Code Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -439,7 +440,7 @@
     <div id="recentModal" class="modal">
         <span class="close-btn" onclick="closeRecentModal()">&times;</span>
         <div class="recent-modal-header">Recent QR Codes</div>
-        <div class="recent-modal-subtitle">Auto-deletes after 28 hours • Click to view</div>
+        <div class="recent-modal-subtitle">Auto-deletes after 48 hours • Click to view</div>
         
         <!-- Sync Toolbar to share data between iPhone & PC -->
         <div class="sync-toolbar">
@@ -486,20 +487,37 @@
         ];
 
         // =========================
-        // 28-Hour Expiry & Recent QR Logic
+        // 48-Hour Expiry & Recent QR Logic (With qr_database.js Integration)
         // =========================
-        const EXPIRY_HOURS_MS = 28 * 60 * 60 * 1000;
+        const EXPIRY_HOURS_MS = 48 * 60 * 60 * 1000; // 48 Hours in Milliseconds
 
         function getCleanRecentQRs() {
             let recentQRs = JSON.parse(localStorage.getItem("recent_qr_codes") || "[]");
+            
+            // Merge in external QR_DATABASE if the file qr_database.js exists
+            if (typeof QR_DATABASE !== "undefined" && Array.isArray(QR_DATABASE)) {
+                QR_DATABASE.forEach(dbItem => {
+                    // Only add if it doesn't already exist in recentQRs by serial
+                    if (!recentQRs.some(item => item.serial === dbItem.serial)) {
+                        recentQRs.push(dbItem);
+                    }
+                });
+            }
+
             const now = Date.now();
+            // Keep only QR codes created within the last 48 hours
             recentQRs = recentQRs.filter(item => (now - item.timestamp) < EXPIRY_HOURS_MS);
+            
+            // Sort by newest first
+            recentQRs.sort((a, b) => b.timestamp - a.timestamp);
+
             localStorage.setItem("recent_qr_codes", JSON.stringify(recentQRs));
             return recentQRs;
         }
 
         function saveRecentQR(machine, model, serial, date, person, qrText) {
             let recentQRs = getCleanRecentQRs();
+            // Remove older duplicate if serial already exists
             recentQRs = recentQRs.filter(item => item.serial !== serial);
 
             recentQRs.unshift({
@@ -522,12 +540,13 @@
             recentList.innerHTML = "";
 
             if (recentQRs.length === 0) {
-                recentList.innerHTML = `<div class="recent-empty">No recent QR codes found.<br>Any QR older than 28 hours is automatically deleted.</div>`;
+                recentList.innerHTML = `<div class="recent-empty">No recent QR codes found.<br>Any QR older than 48 hours is automatically deleted.</div>`;
             } else {
                 recentQRs.forEach(item => {
                     const hoursAgo = Math.floor((Date.now() - item.timestamp) / (1000 * 60 * 60));
                     const minsAgo = Math.floor(((Date.now() - item.timestamp) % (1000 * 60 * 60)) / (1000 * 60));
                     const timeText = hoursAgo > 0 ? `${hoursAgo}h ${minsAgo}m ago` : `${minsAgo}m ago`;
+                    const hoursRemaining = Math.max(0, 48 - hoursAgo);
 
                     const card = document.createElement("div");
                     card.className = "recent-card";
@@ -537,7 +556,7 @@
                             <strong>Model:</strong> ${item.model} | <strong>Serial:</strong> ${item.serial}<br>
                             <strong>Date:</strong> ${item.date} | <strong>By:</strong> ${item.person}
                         </div>
-                        <div class="recent-card-time">Generated ${timeText} • Expires in ${28 - hoursAgo}h</div>
+                        <div class="recent-card-time">Generated ${timeText} • Expires in ${hoursRemaining}h</div>
                     `;
                     card.onclick = () => previewRecentQR(item);
                     recentList.appendChild(card);
@@ -634,7 +653,6 @@
                     const dbModel = parts[3];
                     const dbSerial = parts[4];
 
-                    // Dynamically add any newly learned machine name to the machine list
                     availableMachines.add(dbMachine);
 
                     if (dbMachine === machineInput) {
@@ -648,7 +666,6 @@
                 }
             });
 
-            // Populate Machines Datalist (Includes Default + Newly Learned Machines)
             const machinesDatalist = document.getElementById("machines");
             machinesDatalist.innerHTML = "";
             availableMachines.forEach(m => {
@@ -657,7 +674,6 @@
                 machinesDatalist.appendChild(opt);
             });
 
-            // Populate Models Datalist
             const modelsDatalist = document.getElementById("models");
             modelsDatalist.innerHTML = "";
             availableModels.forEach(m => {
@@ -666,7 +682,6 @@
                 modelsDatalist.appendChild(opt);
             });
 
-            // Populate Serials Datalist
             const serialsDatalist = document.getElementById("serials");
             serialsDatalist.innerHTML = "";
             availableSerials.forEach(s => {
@@ -768,13 +783,13 @@
                 localStorage.setItem("custom_machine_data", JSON.stringify(savedCustomData));
             }
 
-            // Refresh suggestions so the new machine name immediately shows up in dropdowns!
+            // Refresh suggestions so the new machine name immediately shows up in dropdowns
             updateSuggestions();
 
             // 3. Setup QR text format
             const qrText = `##########-THIS_NEW_START-##########\n${machine}\n${model}\n${serial}\n${date}\n${person}`;
 
-            // 4. Save to Recent QR History (valid for 28 hours)
+            // 4. Save to Recent QR History (valid for 48 hours)
             saveRecentQR(machine, model, serial, date, person, qrText);
 
             // 5. Render Modal
@@ -818,7 +833,7 @@
         }
 
         function updateTokenView() {
-            tokenImgElement.style.opacity = 0; // Fade effect
+            tokenImgElement.style.opacity = 0;
             setTimeout(() => {
                 tokenImgElement.src = tokens[currentTokenIndex].src;
                 tokenTitleElement.innerText = tokens[currentTokenIndex].title;
@@ -851,8 +866,8 @@
         });
 
         function handleSwipe() {
-            if (touchEndX < touchStartX - 40) nextToken(); // Swipe Left
-            if (touchEndX > touchStartX + 40) prevToken(); // Swipe Right
+            if (touchEndX < touchStartX - 40) nextToken();
+            if (touchEndX > touchStartX + 40) prevToken();
         }
 
         // =========================
@@ -873,7 +888,7 @@
             }
         });
         
-        // Initialize suggestions & clean expired 28-hr QRs on load
+        // Initialize suggestions & clean expired 48-hr QRs on load
         window.onload = function() {
             updateSuggestions();
             getCleanRecentQRs();
