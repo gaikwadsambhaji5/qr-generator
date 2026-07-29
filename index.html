@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- Updated meta tag to completely disable pinch and double-tap zooming on mobile -->
+    <!-- Completely disable pinch and double-tap zooming on mobile -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FEBTECH QR Code Generator</title>
     
@@ -30,6 +30,26 @@
             padding: 20px;
         }
 
+        /* Top Left Recent QR Button */
+        #recentBtn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: #5856d6; /* Distinct purple color */
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            z-index: 100;
+            transition: 0.2s;
+        }
+        #recentBtn:hover { background: #4745b8; }
+        #recentBtn:active { transform: scale(0.95); }
+
         /* Top Right Tokens Button */
         #tokensBtn {
             position: fixed;
@@ -46,9 +66,6 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
             z-index: 100;
             transition: 0.2s;
-            width: auto;
-            height: auto;
-            margin: 0;
         }
         #tokensBtn:hover { background: #e08300; }
         #tokensBtn:active { transform: scale(0.95); }
@@ -151,9 +168,9 @@
             display: none; 
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.9);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
+            background: rgba(0, 0, 0, 0.92);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             z-index: 1000;
             align-items: center;
             justify-content: center;
@@ -207,6 +224,70 @@
         .qr-details strong {
             color: white;
             font-weight: 600;
+        }
+
+        /* Recent QR Modal Specifics */
+        .recent-modal-header {
+            color: white;
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        .recent-modal-subtitle {
+            color: #ccc;
+            font-size: 13px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .recent-list {
+            width: 100%;
+            max-width: 450px;
+            max-height: 70vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-right: 5px;
+        }
+        .recent-card {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 14px;
+            padding: 14px 18px;
+            cursor: pointer;
+            transition: 0.2s;
+            color: white;
+        }
+        .recent-card:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        .recent-card:active {
+            transform: scale(0.98);
+        }
+        .recent-card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #fff;
+        }
+        .recent-card-info {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.4;
+        }
+        .recent-card-time {
+            font-size: 11px;
+            color: #ffa500;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+        .recent-empty {
+            color: #ccc;
+            font-size: 15px;
+            text-align: center;
+            margin-top: 40px;
         }
 
         /* Tokens Slider Specifics */
@@ -281,7 +362,10 @@
 </head>
 <body>
 
-    <!-- Tokens Button -->
+    <!-- Recent QR Button (Top Left) -->
+    <button id="recentBtn" onclick="openRecentModal()">Recent QR</button>
+
+    <!-- Tokens Button (Top Right) -->
     <button id="tokensBtn" onclick="openTokensModal()">Tokens</button>
 
     <!-- Main Generator Container -->
@@ -327,14 +411,12 @@
         <label>Model Number</label>
         <div class="model-box">
             <span class="prefix">FEBTECH-</span>
-            <!-- Added datalist connection for auto-suggestions -->
             <input list="models" type="text" id="model" placeholder="0480A CL" autocomplete="off">
             <datalist id="models"></datalist>
         </div>
 
         <!-- Serial -->
         <label>Serial Number</label>
-        <!-- Added datalist connection for auto-suggestions -->
         <input list="serials" type="text" id="serial" placeholder="Enter Serial Number" autocomplete="off">
         <datalist id="serials"></datalist>
 
@@ -360,8 +442,15 @@
         <span class="close-btn" onclick="closeQRModal()">&times;</span>
         <div id="qrcode"></div>
         <div class="qr-hint">Scan from screen</div>
-        <!-- This div will populate the machine details in a smaller font -->
         <div id="qrDetails" class="qr-details"></div>
+    </div>
+
+    <!-- Recent QRs Modal (Full Screen) -->
+    <div id="recentModal" class="modal">
+        <span class="close-btn" onclick="closeRecentModal()">&times;</span>
+        <div class="recent-modal-header">Recent QR Codes</div>
+        <div class="recent-modal-subtitle">Auto-deletes after 28 hours • Click to view</div>
+        <div id="recentList" class="recent-list"></div>
     </div>
 
     <!-- Tokens Gallery Modal (Full Screen) -->
@@ -374,15 +463,88 @@
             <img id="tokenImg" src="" alt="Token Image">
         </div>
         
-        <!-- Controls moved to the bottom -->
         <div class="token-footer">
             <button class="nav-btn left" onclick="prevToken()">&#10094;</button>
-            <div class="token-counter" id="tokenCounter">1 / 5</div>
+            <div class="token-counter" id="tokenCounter">1 / 6</div>
             <button class="nav-btn right" onclick="nextToken()">&#10095;</button>
         </div>
     </div>
 
     <script>
+        // =========================
+        // 28-Hour Expiry & Recent QR Logic
+        // =========================
+        const EXPIRY_HOURS_MS = 28 * 60 * 60 * 1000; // 28 hours in milliseconds
+
+        function getCleanRecentQRs() {
+            let recentQRs = JSON.parse(localStorage.getItem("recent_qr_codes") || "[]");
+            const now = Date.now();
+            // Keep only QR codes created within the last 28 hours
+            recentQRs = recentQRs.filter(item => (now - item.timestamp) < EXPIRY_HOURS_MS);
+            localStorage.setItem("recent_qr_codes", JSON.stringify(recentQRs));
+            return recentQRs;
+        }
+
+        function saveRecentQR(machine, model, serial, date, person, qrText) {
+            let recentQRs = getCleanRecentQRs();
+            
+            // Avoid duplicates by filtering out identical serials before adding latest to top
+            recentQRs = recentQRs.filter(item => item.serial !== serial);
+
+            recentQRs.unshift({
+                id: Date.now(),
+                timestamp: Date.now(),
+                machine,
+                model,
+                serial,
+                date,
+                person,
+                qrText
+            });
+
+            localStorage.setItem("recent_qr_codes", JSON.stringify(recentQRs));
+        }
+
+        function openRecentModal() {
+            const recentQRs = getCleanRecentQRs();
+            const recentList = document.getElementById("recentList");
+            recentList.innerHTML = "";
+
+            if (recentQRs.length === 0) {
+                recentList.innerHTML = `<div class="recent-empty">No recent QR codes found.<br>Any QR older than 28 hours is automatically deleted.</div>`;
+            } else {
+                recentQRs.forEach(item => {
+                    const hoursAgo = Math.floor((Date.now() - item.timestamp) / (1000 * 60 * 60));
+                    const minsAgo = Math.floor(((Date.now() - item.timestamp) % (1000 * 60 * 60)) / (1000 * 60));
+                    const timeText = hoursAgo > 0 ? `${hoursAgo}h ${minsAgo}m ago` : `${minsAgo}m ago`;
+
+                    const card = document.createElement("div");
+                    card.className = "recent-card";
+                    card.innerHTML = `
+                        <div class="recent-card-title">${item.machine}</div>
+                        <div class="recent-card-info">
+                            <strong>Model:</strong> ${item.model} | <strong>Serial:</strong> ${item.serial}<br>
+                            <strong>Date:</strong> ${item.date} | <strong>By:</strong> ${item.person}
+                        </div>
+                        <div class="recent-card-time">Generated ${timeText} • Expires in ${28 - hoursAgo}h</div>
+                    `;
+                    card.onclick = () => previewRecentQR(item);
+                    recentList.appendChild(card);
+                });
+            }
+
+            document.getElementById("recentModal").style.display = "flex";
+        }
+
+        function closeRecentModal() {
+            document.getElementById("recentModal").style.display = "none";
+        }
+
+        function previewRecentQR(item) {
+            closeRecentModal();
+            renderQRModal(item.machine, item.model, item.serial, item.date, item.person, item.qrText);
+        }
+
         // =========================
         // Handle Auto Suggestions 
         // =========================
@@ -394,7 +556,6 @@
             let availableModels = new Set();
             let availableSerials = new Set();
 
-            // Combine external MACHINE_DATA (if exists) with local saved data
             let allData = [];
             if (typeof MACHINE_DATA !== 'undefined') {
                 allData = allData.concat(MACHINE_DATA);
@@ -403,7 +564,6 @@
             allData = allData.concat(savedCustomData);
 
             allData.forEach(item => {
-                // Splits path format: ./data/Machine Name/Model Number/Serial Number/...
                 const parts = item.path.split('/');
                 if (parts.length >= 5) {
                     const dbMachine = parts[2];
@@ -411,11 +571,9 @@
                     const dbSerial = parts[4];
 
                     if (dbMachine === machineInput) {
-                        // Strip FEBTECH- prefix for the dropdown suggestion
                         let cleanModel = dbModel.startsWith("FEBTECH-") ? dbModel.replace("FEBTECH-", "") : dbModel;
                         availableModels.add(cleanModel);
 
-                        // Only suggest serials if the model matches (or if no model is typed yet)
                         if (currentFullModel === "" || dbModel === currentFullModel) {
                             availableSerials.add(dbSerial);
                         }
@@ -423,7 +581,6 @@
                 }
             });
 
-            // Populate Models Datalist
             const modelsDatalist = document.getElementById("models");
             modelsDatalist.innerHTML = "";
             availableModels.forEach(m => {
@@ -432,7 +589,6 @@
                 modelsDatalist.appendChild(opt);
             });
 
-            // Populate Serials Datalist
             const serialsDatalist = document.getElementById("serials");
             serialsDatalist.innerHTML = "";
             availableSerials.forEach(s => {
@@ -442,7 +598,6 @@
             });
         }
 
-        // Listeners to update suggestions as you type/select
         document.getElementById("machine").addEventListener("input", updateSuggestions);
         document.getElementById("machine").addEventListener("change", updateSuggestions);
         document.getElementById("model").addEventListener("input", updateSuggestions);
@@ -473,8 +628,32 @@
         });
 
         // =========================
-        // Generate QR Code & Modal
+        // Generate & Render QR Code
         // =========================
+        function renderQRModal(machine, model, serial, date, person, qrText) {
+            const qr = document.getElementById("qrcode");
+            qr.innerHTML = "";
+            new QRCode(qr, {
+                text: qrText,
+                width: 280, 
+                height: 280,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            const qrDetails = document.getElementById("qrDetails");
+            qrDetails.innerHTML = `
+                <div><strong>Machine:</strong> ${machine}</div>
+                <div><strong>Model:</strong> ${model}</div>
+                <div><strong>Serial Number:</strong> ${serial}</div>
+                <div><strong>Date:</strong> ${date}</div>
+                <div><strong>Responsible:</strong> ${person}</div>
+            `;
+
+            openQRModal();
+        }
+
         function generateQR() {
             const machine = document.getElementById("machine").value.trim();
             const modelInput = document.getElementById("model").value.trim();
@@ -488,7 +667,7 @@
             if (!/^\d{2}\/\d{4}$/.test(date)) return alert("Date must be MM/YYYY");
             if (person == "") return alert("Enter Responsible Person");
 
-            // 1. Save New Person (If necessary)
+            // 1. Save New Person
             if (!savedPersons.includes(person) &&
                 person != "Mr. Amrut Deshmukh" &&
                 person != "Mr. Rajaram Mithe" &&
@@ -503,41 +682,22 @@
 
             const model = "FEBTECH-" + modelInput;
             
-            // 2. Save Data logic to local storage so future suggestions will remember it!
+            // 2. Save Custom Data logic to local storage
             const newPath = `./data/${machine}/${model}/${serial}/custom_entry/img.jpg`;
             const savedCustomData = JSON.parse(localStorage.getItem("custom_machine_data") || "[]");
-            // Check if this path already exists
             if (!savedCustomData.some(item => item.path === newPath)) {
                 savedCustomData.push({ path: newPath, date: new Date().toISOString() });
                 localStorage.setItem("custom_machine_data", JSON.stringify(savedCustomData));
             }
 
-            // 3. Setup the QR text format
+            // 3. Setup QR text format
             const qrText = `##########-THIS_NEW_START-##########\n${machine}\n${model}\n${serial}\n${date}\n${person}`;
 
-            // Generate the QR Code Canvas
-            const qr = document.getElementById("qrcode");
-            qr.innerHTML = "";
-            new QRCode(qr, {
-                text: qrText,
-                width: 280, 
-                height: 280,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
-            });
+            // 4. Save to Recent QR History (valid for 28 hours)
+            saveRecentQR(machine, model, serial, date, person, qrText);
 
-            // Populate the details block below the QR Code
-            const qrDetails = document.getElementById("qrDetails");
-            qrDetails.innerHTML = `
-                <div><strong>Machine:</strong> ${machine}</div>
-                <div><strong>Model:</strong> ${model}</div>
-                <div><strong>Serial Number:</strong> ${serial}</div>
-                <div><strong>Date:</strong> ${date}</div>
-                <div><strong>Responsible:</strong> ${person}</div>
-            `;
-
-            openQRModal();
+            // 5. Render Modal
+            renderQRModal(machine, model, serial, date, person, qrText);
         }
 
         // =========================
@@ -551,14 +711,15 @@
         }
 
         // =========================
-        // Tokens Slider Logic
+        // Tokens Slider Logic (Updated Order)
         // =========================
         const tokens = [
-            { src: "tokens_qr_codes_MAIN VISUAL RECORD.webp", title: "MAIN VISUAL RECORD" },
+            { src: "tokens_qr_codes_MACHINE ID RECORD.webp", title: "MACHINE ID RECORD" },
             { src: "tokens_qr_codes_ADDITIONAL VIEW.webp", title: "ADDITIONAL VIEW" },
-            { src: "tokens_qr_codes_DAMAGE & ISSUE.webp", title: "DAMAGE & ISSUE" },
             { src: "tokens_qr_codes_ELECTRICAL PANEL.webp", title: "ELECTRICAL PANEL" },
-            { src: "tokens_qr_codes_MACHINE ID RECORD.webp", title: "MACHINE ID RECORD" }
+            { src: "tokens_qr_codes_MAIN VISUAL RECORD.webp", title: "MAIN VISUAL RECORD" },
+            { src: "tokens_qr_codes_MACHINE SPARES.webp", title: "SPARE" },
+            { src: "tokens_qr_codes_DAMAGE & ISSUE.webp", title: "DAMAGE & ISSUE" }
         ];
         
         let currentTokenIndex = 0;
@@ -618,21 +779,23 @@
         // =========================
         document.addEventListener("keydown", function(e) {
             if (e.key === "Enter") {
-                // Only generate if neither modal is open
                 if (document.getElementById('qrModal').style.display !== 'flex' && 
-                    document.getElementById('tokensModal').style.display !== 'flex') {
+                    document.getElementById('tokensModal').style.display !== 'flex' &&
+                    document.getElementById('recentModal').style.display !== 'flex') {
                     generateQR();
                 }
             }
             if (e.key === "Escape") {
                 closeQRModal();
                 closeTokensModal();
+                closeRecentModal();
             }
         });
         
-        // Initialize suggestions on load
+        // Initialize suggestions & clean expired 28-hr QRs on load
         window.onload = function() {
             updateSuggestions();
+            getCleanRecentQRs();
         };
     </script>
 </body>
